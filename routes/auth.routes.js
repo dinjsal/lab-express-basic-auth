@@ -32,6 +32,7 @@ router.post("/signup", async (req, res) => {
       });
       //redirect to this page
       res.redirect("/auth/login");
+      return newUser;
     } else {
       //show auth folder signup.hbs file
       res.render("auth/signup", { errorMessage: "Username already taken" });
@@ -41,25 +42,32 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-router.post("login", async (req, res) => {
-  const { email, password } = req.body;
-  const userExists = await Model.findOne({ email: req.body.email });
-  //is there an existing user with email?
-  if (!userExists) {
-    res.render("auth/login"), { errorMessage: "Please try again" };
-    // if it exists, check the pwd
-  } else {
-    const passwordMatches = bcryptjs.compareSync(
-      req.body.password,
-      userExists.password
-    );
-    if (passwordMatches) {
-      res.render("profile", { user: userExists });
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const userExists = await User.findOne({ email: req.body.email });
+    //is there an existing user with email?
+    if (!userExists) {
+      res.render("auth/login"), { errorMessage: "Please try again" };
+      // if it exists, check the pwd
     } else {
-      res.render("auth/login", {
-        errorMessage: "Login credentials not found/did not match",
-      });
+      const passwordMatches = bcryptjs.compareSync(
+        req.body.password,
+        userExists.password
+      );
+      // if the pwd matches
+      if (passwordMatches) {
+        //take user to his/her profile page
+        res.render("profile", { users: userExists });
+        //if not, login page again with error message
+      } else {
+        res.render("auth/login", {
+          errorMessage: "Login credentials not found/did not match",
+        });
+      }
     }
+  } catch (err) {
+    console.log(err);
   }
 });
 
