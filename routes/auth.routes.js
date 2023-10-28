@@ -22,11 +22,11 @@ router.post("/signup", async (req, res) => {
     if (!response) {
       // generate salt with 12 chars
       const salt = bcryptjs.genSaltSync(12);
-      //hash a pwd
+      //hash a pwd, takes 2 arguments: password & salt
       const hashedPassword = bcryptjs.hashSync(req.body.password, salt);
       //actual creation of a new user
       const newUser = await User.create({
-        // copy of req.body
+        // copy of req.body. changing the password to the hashedPassword
         ...req.body,
         password: hashedPassword,
       });
@@ -46,7 +46,8 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     const userExists = await User.findOne({ email: req.body.email });
-    //is there an existing user with email?
+    //is there an existing user with that email?
+    //if no, show login page with error message
     if (!userExists) {
       res.render("auth/login"), { errorMessage: "Please try again" };
       // if it exists, check the pwd
@@ -58,7 +59,7 @@ router.post("/login", async (req, res) => {
       // if the pwd matches
       if (passwordMatches) {
         //take user to his/her profile page
-        res.render("profile", { users: userExists });
+        res.render("/profile", { users: userExists });
         //if not, login page again with error message
       } else {
         res.render("auth/login", {
