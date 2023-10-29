@@ -10,6 +10,9 @@ router.get("/signup", (req, res, next) => {
   res.render("auth/signup"); // auth folder, signup.hbs
 });
 
+// isLoggedOut: auth user shouldn't see the profile page anymore
+// and is redirected to login page
+
 router.get("/login", isLoggedOut, (req, res) => {
   res.render("auth/login"); // auth folder, login.hbs
 });

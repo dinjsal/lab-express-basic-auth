@@ -7,6 +7,8 @@ const isLoggedIn = (req, res, next) => {
     //   } else if (req.session.currentUser.premium) {
     //     next();
   } else {
+    // also, auth user already logged in and
+    // shouldn't see the /auth/login anymore
     return res.redirect("/auth/login");
   }
 };
