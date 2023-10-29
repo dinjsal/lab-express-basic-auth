@@ -43,7 +43,7 @@ router.post("/signup", async (req, res) => {
       // );
 
       res.status(500).render("auth/signup", {
-        errorMessage: "Either username or email is already used. ",
+        errorMessage: "Either username or email is already used",
       });
     } else {
       next(error);
@@ -64,6 +64,7 @@ router.post("/login", async (req, res) => {
       });
       // if it exists, check the pwd
     } else {
+      // always returns a boolean
       const passwordMatches = bcryptjs.compareSync(
         req.body.password,
         userExists.password
