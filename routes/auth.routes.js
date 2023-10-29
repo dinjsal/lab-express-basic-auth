@@ -38,12 +38,12 @@ router.post("/signup", async (req, res) => {
     }
   } catch (error) {
     if (error.code === 11000) {
-      console.log(
-        " Username and email need to be unique. Either username or email is already used. "
-      );
+      // console.log(
+      //   " Username and email need to be unique. Either username or email is already used. "
+      // );
 
       res.status(500).render("auth/signup", {
-        errorMessage: "Either username or email is already used.",
+        errorMessage: "Either username or email is already used. ",
       });
     } else {
       next(error);
@@ -71,8 +71,8 @@ router.post("/login", async (req, res) => {
       // if the pwd matches
       if (passwordMatches) {
         //take user to his/her profile page
-        res.render("profile", { users: userExists });
-        //if not, login page again with error message
+        res.redirect("/profile");
+        //if not, login page aga, { users: userExists }in with error message
       } else {
         res.render("auth/login", {
           errorMessage:
