@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const User = require("../models/User.model");
 const bcryptjs = require("bcryptjs");
+const mongoose = require("mongoose");
 
 /* GET */
 
@@ -14,10 +15,30 @@ router.get("/login", (req, res, next) => {
 
 /* POST */
 
-router.post("/signup", async (req, res) => {
-  //is there an existing user?
+router.post("/signup", async (req, res, next) => {
+  // mandatory fields test
+  if (req.body.email === "" || req.body.password === "") {
+    res.render("auth/signup", {
+      errorMessage:
+        "All fields are mandatory. Please provide your username, email and password.",
+    });
+    return;
+  }
+
+  // regex test for passwords
+
+  const regex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
+  if (!regex.test(req.body.password)) {
+    res.status(500).render("auth/signup", {
+      errorMessage:
+        "Password needs to have at least 6 chars and must contain at least one number, one lowercase and one uppercase letter.",
+    });
+    return;
+  }
+
   try {
     let response = await User.findOne({ username: req.body.username });
+    //is there an existing user?
     //no user, so create one
     if (!response) {
       // generate salt with 12 chars
@@ -45,6 +66,8 @@ router.post("/signup", async (req, res) => {
       res.status(500).render("auth/signup", {
         errorMessage: "Either username or email is already used",
       });
+    } else if (error instanceof mongoose.Error.ValidationError) {
+      res.status(500).render("auth/signup", { errorMessage: error.message });
     } else {
       next(error);
     }
@@ -71,6 +94,10 @@ router.post("/login", async (req, res) => {
       );
       // if the pwd matches
       if (passwordMatches) {
+        // currentUser - you can name it anything you want
+        // will only be created if the password is a match
+        // ***** SAVE THE USER IN THE SESSION *****
+        req.session.currentUser = userExists;
         //take user to his/her profile page
         res.redirect("/profile");
         //if not, login page aga, { users: userExists }in with error message
