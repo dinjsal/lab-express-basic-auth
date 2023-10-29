@@ -32,13 +32,22 @@ router.post("/signup", async (req, res) => {
       });
       //redirect to this page
       res.redirect("/auth/login");
-      return newUser;
     } else {
       //show auth folder signup.hbs file
       res.render("auth/signup", { errorMessage: "Username already taken" });
     }
-  } catch (err) {
-    console.log(err);
+  } catch (error) {
+    if (error.code === 11000) {
+      console.log(
+        " Username and email need to be unique. Either username or email is already used. "
+      );
+
+      res.status(500).render("auth/signup", {
+        errorMessage: "Either username or email is already used.",
+      });
+    } else {
+      next(error);
+    }
   }
 });
 
@@ -49,7 +58,10 @@ router.post("/login", async (req, res) => {
     //is there an existing user with that email?
     //if no, show login page with error message
     if (!userExists) {
-      res.render("auth/login"), { errorMessage: "Please try again" };
+      res.render("auth/login", {
+        errorMessage:
+          "Please try again. Login credentials not found/did not match",
+      });
       // if it exists, check the pwd
     } else {
       const passwordMatches = bcryptjs.compareSync(
@@ -59,11 +71,12 @@ router.post("/login", async (req, res) => {
       // if the pwd matches
       if (passwordMatches) {
         //take user to his/her profile page
-        res.render("/profile", { users: userExists });
+        res.render("profile", { users: userExists });
         //if not, login page again with error message
       } else {
         res.render("auth/login", {
-          errorMessage: "Login credentials not found/did not match",
+          errorMessage:
+            "Please try again. Login credentials not found/did not match",
         });
       }
     }
