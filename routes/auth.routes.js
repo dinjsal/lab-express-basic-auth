@@ -2,6 +2,7 @@ const router = require("express").Router();
 const User = require("../models/User.model");
 const bcryptjs = require("bcryptjs");
 const mongoose = require("mongoose");
+const { isLoggedOut } = require("../middleware/route.guard");
 
 /* GET */
 
@@ -9,14 +10,14 @@ router.get("/signup", (req, res, next) => {
   res.render("auth/signup"); // auth folder, signup.hbs
 });
 
-router.get("/login", (req, res, next) => {
+router.get("/login", isLoggedOut, (req, res) => {
   res.render("auth/login"); // auth folder, login.hbs
 });
 
 /* POST */
 
 router.post("/signup", async (req, res, next) => {
-  // mandatory fields test
+  // mandatory fields test, Bonus | The validation #1
   if (req.body.email === "" || req.body.password === "") {
     res.render("auth/signup", {
       errorMessage:
@@ -55,9 +56,11 @@ router.post("/signup", async (req, res, next) => {
       res.redirect("/auth/login");
     } else {
       //show auth folder signup.hbs file
+      // Bonus | The validation #2
       res.render("auth/signup", { errorMessage: "Username already taken" });
     }
   } catch (error) {
+    //Bonus | Validation during the login process
     if (error.code === 11000) {
       // console.log(
       //   " Username and email need to be unique. Either username or email is already used. "
